@@ -1,0 +1,17 @@
+export enum Role {
+  AccountR = 'account_read',
+  AccountW = 'account_write',
+  AccountX = 'account_delete',
+  PaymentR = 'payment_read',
+  PaymentW = 'payment_write',
+  PaymentX = 'payment_delete',
+  AdmissionR = 'admission_read',
+  AdmissionW = 'admission_write',
+  AdmissionX = 'admission_delete',
+  CourseR = 'course_read',
+  CourseW = 'course_write',
+  CourseX = 'course_delete',
+  SupportR = 'support_read',
+  SupportW = 'support_write',
+  SupportX = 'support_delete',
+}
