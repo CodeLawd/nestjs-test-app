@@ -8,6 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserRepository } from './../entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import SendChamp from 'src/common/utils/sendchamp';
+import { VerifyDto, ResendOtp } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -39,6 +41,9 @@ export class AuthService {
     };
   }
 
+  /*
+   *  Register a User
+   */
   async register(createUserDto: CreateUserDto) {
     const { password, email, userType, ...rest } = createUserDto;
 
@@ -66,8 +71,44 @@ export class AuthService {
       password: hash,
     });
 
-    this.eventEmitter.emit('user_created', user);
+    this.eventEmitter.emit('user.created', user);
 
     return user;
+  }
+
+  /*
+   * Verify Users OTP
+   */
+  async verifyOtp(data: VerifyDto) {
+    const user = await this.userRepository.findOne({ email: data.email });
+
+    if (!user)
+      throw new NotFoundException(`User with ${data.email} does not exists`);
+
+    const response = await SendChamp.verifyOtp({
+      data: { otp: data.otp, reference: user.sendchampReference },
+    });
+
+    if (response.code == 200) {
+      this.eventEmitter.emit('user.verified', {
+        firstName: user.firstName,
+        email: user.email,
+      });
+    }
+
+    return true;
+  }
+
+  /*
+   *  Resend OTP
+   */
+  async resendOtp(data: ResendOtp) {
+    const user = await this.userRepository.findOne({ email: data.email });
+    if (!user)
+      throw new NotFoundException(`User with ${data.email} does not exists`);
+
+    this.eventEmitter.emit('resend.otp', user);
+
+    return true;
   }
 }
